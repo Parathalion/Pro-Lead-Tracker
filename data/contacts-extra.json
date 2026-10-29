@@ -1,0 +1,7 @@
+{
+ "app": "pro-lead-tracker-phones",
+ "version": 1,
+ "exported": null,
+ "note": "Phone numbers and emails found by the Claude task. Replace this file with the one from the tracker's \"Send phones to app\" button.",
+ "contacts": {}
+}

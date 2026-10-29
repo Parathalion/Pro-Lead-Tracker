@@ -1,0 +1,299 @@
+{
+ "frisco": {
+  "url": "https://www.friscotexas.gov/Archive.aspx?ADID=3997",
+  "month": "2026-09",
+  "permits": {
+   "B26-00196": {
+    "company": "PVB Contracting LLC",
+    "applicant": "Duncan Kim"
+   },
+   "B26-00804": {
+    "company": "Sunbelt Waterproofing & Restoration, LLC",
+    "applicant": "Morgan Roberts"
+   },
+   "B26-01719": {
+    "company": "Mitchell Davis",
+    "applicant": "Polo Padilla"
+   },
+   "B26-01734": {
+    "company": "Novel Builders",
+    "applicant": "Cody Petrick"
+   },
+   "B26-01848": {
+    "company": "CBM Construction Inc",
+    "applicant": "Debbie Greer"
+   },
+   "B26-01945": {
+    "company": "Above Board Construction Services LLC",
+    "applicant": "Lindsey Szczech"
+   },
+   "B26-02053": {
+    "company": "Eckinger Construction Co",
+    "applicant": "Katie Getz"
+   },
+   "B26-02141": {
+    "company": "Simantis Inc",
+    "applicant": "Petar Petrov"
+   },
+   "B26-02248": {
+    "company": "Crossland Construction Co",
+    "applicant": "Trevor Kellogg"
+   },
+   "B26-02311": {
+    "company": "Evans & Son, Inc.",
+    "applicant": "Irina Perez"
+   },
+   "B26-02398": {
+    "company": "Ashford Building Solutions, LLC",
+    "applicant": "Peter Addy"
+   },
+   "B26-02427": {
+    "company": "The Beck Group",
+    "applicant": "Carter Reed"
+   },
+   "B26-02476": {
+    "company": "SWX Construction",
+    "applicant": "Michael Scarbrough"
+   },
+   "B26-02547": {
+    "company": "Kellys Restoration",
+    "applicant": "Robin Kelly"
+   },
+   "B26-02569": {
+    "company": "Romano Custom Homes LLC",
+    "applicant": "Jung Lee"
+   },
+   "B26-02755": {
+    "company": "Sheri Star LLC",
+    "applicant": "Sheri Shamsi"
+   },
+   "B26-02764": {
+    "company": "Quality Foundation & Plumbing",
+    "applicant": "Brandon Rios"
+   },
+   "B26-02825": {
+    "company": "Arkenstone Construction",
+    "applicant": "Jose Farina"
+   },
+   "B26-02883": {
+    "company": "Integra Premier Services",
+    "applicant": "Stephanie Torrez"
+   },
+   "B26-03180": {
+    "company": "Pinnacle Foundation Repair",
+    "applicant": "Caitlin Brown"
+   },
+   "ROOF26-00554": {
+    "company": "Peach State Roofing, Inc.",
+    "applicant": "Zach Gloff"
+   }
+  }
+ },
+ "murphy": {
+  "url": "https://murphytx.org/DocumentCenter/View/10440/September-2026",
+  "month": "2026-09",
+  "permits": {
+   "260355": {
+    "company": "Dallas Custom Roofing"
+   },
+   "260412": {
+    "company": "Pelayo Plumbing"
+   },
+   "260568": {
+    "company": "Rise Power LLC"
+   },
+   "260928": {
+    "company": "Rasheed, Adbul"
+   },
+   "261284": {
+    "company": "Todd, James"
+   },
+   "261362": {
+    "company": "Golden Hour Pools"
+   },
+   "261389": {
+    "company": "CLEXT LLC"
+   },
+   "261401": {
+    "company": "Kodiak Fire Protection"
+   },
+   "261436": {
+    "company": "LandEvelop LLC"
+   },
+   "261450": {
+    "company": "J Art Signs"
+   },
+   "261465": {
+    "company": "DR Horton"
+   },
+   "261477": {
+    "company": "Smart Foundation Repair"
+   },
+   "261484": {
+    "company": "Clarity Windows & Doors"
+   },
+   "261488": {
+    "company": "Williamson Foundation Repair"
+   },
+   "261493": {
+    "company": "ARS of Dallas"
+   },
+   "261517": {
+    "company": "High View Plumbing Contractors"
+   },
+   "261519": {
+    "company": "Copeland Home Services"
+   },
+   "261521": {
+    "company": "Xtreme Air Services"
+   },
+   "261526": {
+    "company": "HomeLuxe Builders Inc"
+   },
+   "261539": {
+    "company": "Clarity Windows & Doors"
+   },
+   "261540": {
+    "company": "Maple Builds LLC"
+   },
+   "261550": {
+    "company": "Homestead Heating and Air"
+   },
+   "261555": {
+    "company": "USA Choice Remodeling"
+   },
+   "261564": {
+    "company": "Infinity Replacement, LLC"
+   },
+   "261565": {
+    "company": "Stratum Foundation Repair"
+   },
+   "261571": {
+    "company": "Texas Multi-Sign LP"
+   },
+   "261572": {
+    "company": "Texas Multi-Sign LP"
+   },
+   "261573": {
+    "company": "Blum, Chris"
+   },
+   "261575": {
+    "company": "Extreme Comfort AC & Heating"
+   },
+   "261576": {
+    "company": "DR Horton"
+   },
+   "261577": {
+    "company": "Select Roofing LLC"
+   },
+   "261578": {
+    "company": "Driven NTX Outdoor Living"
+   },
+   "261579": {
+    "company": "Joseph Paul Homes"
+   },
+   "261580": {
+    "company": "Same Day Water Heater's LLC"
+   },
+   "261581": {
+    "company": "Align Foundation Repair"
+   },
+   "261583": {
+    "company": "Signs Express"
+   },
+   "261584": {
+    "company": "Prestige Roofing"
+   },
+   "261585": {
+    "company": "Structured Foundation Repairs"
+   },
+   "261586": {
+    "company": "Olshan Foundation Repair"
+   },
+   "261587": {
+    "company": "Deck-O-Art"
+   },
+   "261588": {
+    "company": "O'Donuts"
+   },
+   "261590": {
+    "company": "Jaric Co A/C Services LLC"
+   },
+   "261591": {
+    "company": "Original Mocha"
+   },
+   "261592": {
+    "company": "A#1 Air"
+   },
+   "261593": {
+    "company": "Monumental Construction & Restoration"
+   },
+   "261594": {
+    "company": "Same Day Water Heater's LLC"
+   },
+   "261595": {
+    "company": "Aubrey Plumbing Company"
+   },
+   "261596": {
+    "company": "Lasiter & Lasiter Plumbing"
+   },
+   "261597": {
+    "company": "Jamba/Auntie Anne's"
+   },
+   "261598": {
+    "company": "DNA Plumbing Services"
+   },
+   "261599": {
+    "company": "Exclusive Roofing and GC"
+   },
+   "261600": {
+    "company": "Advanced Foundation Repair"
+   },
+   "261601": {
+    "company": "ISO Plumbing LLC"
+   },
+   "261602": {
+    "company": "G Signs and Graphics"
+   },
+   "261603": {
+    "company": "Big Blue Marble Academy, LLC"
+   },
+   "261604": {
+    "company": "Brima Handyman LLC"
+   },
+   "261605": {
+    "company": "Crystal Roofing"
+   },
+   "261606": {
+    "company": "Crystal Roofing"
+   },
+   "261608": {
+    "company": "A Star Heat & Air, Inc"
+   },
+   "261609": {
+    "company": "Arwa Coffee"
+   },
+   "261611": {
+    "company": "Roof Raiders and Co"
+   },
+   "261612": {
+    "company": "Fuller, James"
+   },
+   "261613": {
+    "company": "Tibbals Elementary School"
+   },
+   "261614": {
+    "company": "NTX Electric"
+   },
+   "261615": {
+    "company": "Total Air & Heat"
+   },
+   "261616": {
+    "company": "Structured Foundation Repairs"
+   },
+   "261617": {
+    "company": "RCSA Roofing & Construction"
+   }
+  }
+ }
+}

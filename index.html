@@ -1,0 +1,1012 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pro Lead Tracker</title>
+<meta name="description" content="Track DFW commercial construction leads from zoning to won quote.">
+<meta name="theme-color" content="#1f5f8b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Leads">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.45 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a plan-room ledger. Summary strip up top, tabbed registers below, rows open into an edit sheet. */
+:root {
+  --bg: #f3f4f1;
+  --surface: #ffffff;
+  --ink: #1b2422;
+  --muted: #5c6764;
+  --line: #d9ddd8;
+  --accent: #1f5f8b;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3edf5;
+  --good: #2f7a3e;
+  --good-soft: #e3f1e5;
+  --warn: #a8640a;
+  --warn-soft: #fbf0dc;
+  --bad: #b23a2b;
+  --bad-soft: #f8e3df;
+  --chip: #eceeea;
+  --overlay: rgba(20, 26, 25, .45);
+  --display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141917; --surface: #1c2220; --ink: #e6ebe8; --muted: #9aa5a1; --line: #2f3835;
+    --accent: #6aa9d6; --accent-ink: #0d1a24; --accent-soft: #1d2f3c;
+    --good: #72c483; --good-soft: #1b3221; --warn: #e4a74b; --warn-soft: #3a2c15;
+    --bad: #ec8a7c; --bad-soft: #3d201b; --chip: #262e2b; --overlay: rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141917; --surface: #1c2220; --ink: #e6ebe8; --muted: #9aa5a1; --line: #2f3835;
+  --accent: #6aa9d6; --accent-ink: #0d1a24; --accent-soft: #1d2f3c;
+  --good: #72c483; --good-soft: #1b3221; --warn: #e4a74b; --warn-soft: #3a2c15;
+  --bad: #ec8a7c; --bad-soft: #3d201b; --chip: #262e2b; --overlay: rgba(0,0,0,.6);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 14px; line-height: 1.45; }
+.wrap { max-width: 1200px; margin: 0 auto; padding-block: 24px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 20px; }
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 28px; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 2px 0 0; }
+.hdr-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
+.hdr-actions .status { flex: 1 1 100%; text-align: right; }
+@media (max-width: 560px) { .hdr-actions { justify-content: flex-start; } .hdr-actions .status { text-align: left; } }
+.status { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.status.err { color: var(--bad); }
+
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.stat { background: var(--surface); padding: 14px 16px; display: grid; gap: 2px; }
+.stat .k { font-family: var(--display); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.stat .v { font-family: var(--mono); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.stat .v.bad { color: var(--bad); }
+.stat .n { font-size: 12px; color: var(--muted); }
+@media (max-width: 560px) { .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stat:last-child:nth-child(odd) { grid-column: 1 / -1; } }
+
+nav.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+nav.tabs button { font-family: var(--display); font-size: 15px; font-weight: 600; letter-spacing: .02em; background: none; border: 0; color: var(--muted); padding: 10px 14px; border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+nav.tabs .count { font-family: var(--mono); font-size: 11px; background: var(--chip); border-radius: 10px; padding: 1px 7px; margin-left: 6px; color: var(--muted); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar .grow { flex: 1 1 200px; min-width: 0; }
+input, select, textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; width: 100%; }
+textarea { min-height: 72px; resize: vertical; }
+/* 16px fields stop iPhone from zooming in when you tap one */
+@media (pointer: coarse), (max-width: 560px) { input, select, textarea { font-size: 16px; } .filters select { font-size: 16px; } }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.toolbar select { width: auto; max-width: 100%; }
+.toolbar > * { min-width: 0; }
+.filters { flex: 1 1 100%; min-width: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filters select { font-size: 13px; padding: 6px 8px; min-width: 0; max-width: 100%; text-overflow: ellipsis; }
+@media (max-width: 560px) { .filters select { flex: 1 1 calc(50% - 4px); width: 0; } .toolbar .grow { flex-basis: 100%; } #sort { flex: 1 1 0; width: 0; } }
+.wrap > * { min-width: 0; }
+.filters select.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.btn { font: 600 14px var(--body); border-radius: 6px; padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.danger { color: var(--bad); }
+.btn.danger.armed { background: var(--bad); border-color: var(--bad); color: var(--surface); }
+.btn.small { padding: 4px 10px; font-size: 12px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.stages { display: flex; flex-wrap: wrap; gap: 6px; }
+.stages button { font: 500 12px var(--body); border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.stages button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.stages .c { font-family: var(--mono); margin-left: 4px; opacity: .7; }
+
+.checkin { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 10px; }
+.checkin .row1 { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; }
+a.ext { font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 6px; white-space: nowrap; }
+.checkin h2 { font-family: var(--display); font-size: 17px; margin: 0; }
+.checkin .prog { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+.checkin .prog strong { color: var(--ink); }
+.bar { height: 10px; background: var(--chip); border-radius: 999px; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.bar.done > span { background: var(--good); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { font: 600 13px var(--body); background: var(--surface); color: var(--muted); border: 0; padding: 6px 12px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+tr.done td { opacity: .6; }
+tr.done td:last-child { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) { .bar > span { transition: width .3s ease; } }
+.tablebox { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 760px; }
+th { font-family: var(--display); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+tbody tr.row { cursor: pointer; }
+tbody tr.row:hover td { background: var(--accent-soft); }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+td.date { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.name { font-weight: 600; }
+.meta { color: var(--muted); font-size: 12px; }
+.notes { color: var(--muted); font-size: 12px; max-width: 320px; }
+a { color: var(--accent); }
+
+.pill { display: inline-block; font: 600 11px var(--display); letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--chip); color: var(--ink); white-space: nowrap; }
+.pill.early { background: var(--accent-soft); color: var(--accent); }
+.pill.mid { background: var(--warn-soft); color: var(--warn); }
+.pill.good { background: var(--good-soft); color: var(--good); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.dim { background: var(--chip); color: var(--muted); }
+.due-over { color: var(--bad); font-weight: 600; }
+.due-today { color: var(--warn); font-weight: 600; }
+.due-soon { color: var(--ink); }
+
+.empty { padding: 36px 20px; text-align: center; color: var(--muted); display: grid; gap: 10px; justify-items: center; }
+.empty strong { color: var(--ink); font-family: var(--display); font-size: 17px; }
+
+[hidden] { display: none !important; }
+.overlay { position: fixed; inset: 0; background: var(--overlay); display: grid; place-items: center; padding: 16px; z-index: 20; overscroll-behavior: contain; overflow-y: auto; }
+.sheet { background: var(--surface); border-radius: 10px; width: min(680px, 100%); max-height: calc(100% - 32px); overflow: auto; padding: 20px; display: grid; gap: 16px; border: 1px solid var(--line); }
+.sheet h2 { font-family: var(--display); font-size: 20px; margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.grid .wide { grid-column: 1 / -1; }
+@media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+label.f { display: grid; gap: 4px; min-width: 0; }
+label.f span { font-family: var(--display); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+.actions .right { display: flex; gap: 8px; }
+.hint { font-size: 12px; color: var(--muted); margin: 0; }
+.banner { background: var(--warn-soft); color: var(--warn); border-radius: 6px; padding: 10px 12px; font-size: 13px; }
+@media (prefers-reduced-motion: no-preference) { tbody tr.row td { transition: background .12s; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Pro Lead Tracker</h1>
+      <p class="sub">Commercial projects in DFW, from P&amp;Z to purchase order. Saved on this device; use Back up to keep a copy.</p>
+    </div>
+    <div class="hdr-actions">
+      <div class="status" id="status">Loading…</div>
+      <button class="btn small primary" id="install" type="button" hidden>Install app</button>
+      <button class="btn small" id="backup" type="button">Back up</button>
+      <label class="btn small" for="restore">Restore</label>
+      <input type="file" id="restore" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+  <p id="ioshint" class="banner" hidden>To install on iPhone or iPad: tap the Share button in Safari, then <strong>Add to Home Screen</strong>.</p>
+
+  <section class="summary" aria-label="Summary">
+    <div class="stat"><span class="k">Open pipeline</span><span class="v" id="s-pipe">$0</span><span class="n" id="s-pipe-n">0 active projects</span></div>
+    <div class="stat"><span class="k">Follow-ups overdue</span><span class="v" id="s-over">0</span><span class="n" id="s-over-n">Projects and quotes</span></div>
+    <div class="stat"><span class="k">Quotes pending</span><span class="v" id="s-pend">$0</span><span class="n" id="s-pend-n">0 out</span></div>
+    <div class="stat"><span class="k">Quotes won</span><span class="v" id="s-won">$0</span><span class="n" id="s-won-n">Win rate —</span></div>
+    <div class="stat"><span class="k">Left to check today</span><span class="v" id="s-src">0</span><span class="n" id="s-src-n">Lead sources</span></div>
+  </section>
+
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+
+  <div class="toolbar" id="toolbar"></div>
+  <div class="stages" id="stages"></div>
+  <section class="checkin" id="checkin" hidden aria-label="Today's check-in"></section>
+  <div class="tablebox" id="tablebox"></div>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <form class="sheet" id="sheet" novalidate></form>
+</div>
+
+<script>window.PLT_SEED_SOURCES = {"allen-edc": {"category": "News", "freq": "Monthly", "last": "", "name": "Allen Economic Development Corp.", "notes": "Announces new corporate relocations, office and mixed-use projects in Allen before they hit permits.", "order": 23, "url": "https://allenedc.com"}, "allen-isd": {"category": "Public bids", "freq": "Monthly", "last": "", "name": "Allen ISD (bond projects & bids)", "notes": "Check Purchasing and bond pages for construction and renovation bids. Same idea for McKinney, Plano and Prosper ISDs.", "order": 31, "url": "https://www.allenisd.org"}, "allen-permits": {"category": "City permits", "freq": "Weekly", "last": "", "name": "Allen: city site (Community Development / Building)", "notes": "Home base (75013). Go to Community Development > Building & Permitting for the permit portal and issued-permit reports. Watch Watters Creek, US-75 and SH-121 corridors for finish-outs and new retail/office.", "order": 21, "url": "https://www.cityofallen.org"}, "allen-pz": {"category": "P&Z agendas", "freq": "Every 2 weeks", "last": "", "name": "Allen: P&Z and council meetings", "notes": "Meeting videos; agendas and packets are on cityofallen.org. Zoning cases and site plans name the developer and engineer early.", "order": 22, "url": "https://allentx.new.swagit.com"}, "arlington": {"category": "City permits", "freq": "Monthly", "last": "", "name": "Arlington: city site (Building Inspections)", "notes": "Search 'permits'. Entertainment district, multifamily and industrial.", "order": 11, "url": "https://www.arlingtontx.gov"}, "buildingconnected": {"category": "Bid site", "freq": "Weekly", "last": "", "name": "BuildingConnected", "notes": "Create a free supplier profile so DFW GCs can invite you to bid. Watch finish-out and multifamily invites.", "order": 16, "url": "https://www.buildingconnected.com"}, "collin-county": {"category": "County", "freq": "Monthly", "last": "", "name": "Collin County Development Services", "notes": "Unincorporated Collin County development (outside city limits, e.g. around Lucas and Parker).", "order": 30, "url": "https://www.collincountytx.gov/services/engineering/development-services/faq"}, "constructconnect": {"category": "Paid service", "freq": "As needed", "last": "", "name": "ConstructConnect", "notes": "Paid project leads with GC/sub lists and plans.", "order": 19, "url": "https://www.constructconnect.com"}, "dallas-legistar": {"category": "P&Z agendas", "freq": "Every 2 weeks", "last": "", "name": "Dallas: council & CPC agendas (Legistar)", "notes": "Zoning cases and City Plan Commission items name the developer and engineer months before permits.", "order": 13, "url": "https://cityofdallas.legistar.com"}, "dallas-permits": {"category": "City permits", "freq": "Weekly", "last": "", "name": "Dallas: DallasNow permit portal", "notes": "Search commercial building permits (new, alteration, finish-out). Applied-for permits are earlier leads than issued ones.", "order": 2, "url": "https://aca-prod.accela.com/dallastx"}, "dbj": {"category": "News", "freq": "Weekly", "last": "", "name": "Dallas Business Journal", "notes": "Land deals, groundbreakings and announced developments. Add anything promising as a Zoning / P&Z project.", "order": 20, "url": "https://www.bizjournals.com/dallas"}, "denton-county": {"category": "County", "freq": "Monthly", "last": "", "name": "Denton County Development Services", "notes": "Unincorporated-area development and plats.", "order": 12, "url": "https://www.dentoncounty.gov/667/Development-Services"}, "denton-permits": {"category": "City permits", "freq": "Weekly", "last": "", "name": "Denton: commercial permits (eTRAKiT)", "notes": "Links to Denton's eTRAKiT portal. Look for commercial new construction and tenant finish-outs.", "order": 4, "url": "https://www.cityofdenton.com/282/Commercial-Permits"}, "dodge": {"category": "Paid service", "freq": "As needed", "last": "", "name": "Dodge Construction Network", "notes": "Paid. Ask your Pro AE whether Lowe's already has access before buying.", "order": 18, "url": "https://www.construction.com"}, "esbd": {"category": "Public bids", "freq": "Weekly", "last": "", "name": "Texas SmartBuy ESBD", "notes": "State and local public bids. Filter for construction and building materials in North Texas.", "order": 15, "url": "https://www.txsmartbuy.gov/esbd"}, "fairview-permits": {"category": "City permits", "freq": "Monthly", "last": "", "name": "Fairview: permit forms & applications", "notes": "Borders 75013. Fairview Town Center retail and restaurant finish-outs.", "order": 28, "url": "https://fairviewtexas.org/government/permit-forms-and-applications/"}, "flowermound": {"category": "City permits", "freq": "Monthly", "last": "", "name": "Flower Mound: city site (Building Inspections)", "notes": "Local to your store area. Medical and retail finish-outs.", "order": 10, "url": "https://www.flower-mound.com"}, "fortworth-legistar": {"category": "P&Z agendas", "freq": "Every 2 weeks", "last": "", "name": "Fort Worth: council & zoning agendas (Legistar)", "notes": "Zoning Commission cases and site plans. Also check suburb P&Z agendas on each city site.", "order": 14, "url": "https://fortworthgov.legistar.com"}, "fortworth-permits": {"category": "City permits", "freq": "Weekly", "last": "", "name": "Fort Worth: Accela Citizen Access", "notes": "Search commercial permit records. Contractor name on the record is your GC lead.", "order": 3, "url": "https://aca-prod.accela.com/CFW/Default.aspx"}, "frisco-permits": {"category": "City permits", "freq": "Every 2 weeks", "last": "", "name": "Frisco: Building Inspections", "notes": "Fast-growing; lots of retail pads and office finish-outs. Use the online permit portal linked from this page.", "order": 5, "url": "https://www.friscotexas.gov/395/Building-Inspections"}, "irving-permits": {"category": "City permits", "freq": "Every 2 weeks", "last": "", "name": "Irving: commercial permits", "notes": "Office and Las Colinas finish-outs. Online permit search linked from this page.", "order": 6, "url": "https://irvingtx.gov/commercial-permits"}, "lewisville-permits": {"category": "City permits", "freq": "Every 2 weeks", "last": "", "name": "Lewisville: building permits", "notes": "Close to Double Oak. Retail and industrial finish-outs along I-35E.", "order": 7, "url": "https://cityoflewisville.com/for-business/building-services/building-permits"}, "mckinney": {"category": "City permits", "freq": "Every 2 weeks", "last": "", "name": "McKinney: city site (Development Services)", "notes": "Search 'permits' for the development portal. Heavy multifamily and retail growth.", "order": 9, "url": "https://www.mckinneytexas.org"}, "murphy-permits": {"category": "City permits", "freq": "Monthly", "last": "", "name": "Murphy: Permit Issued Reports", "notes": "City posts issued-permit reports; scan for commercial entries and contractor names.", "order": 25, "url": "https://murphytx.org/951/Permit-Issued-Reports"}, "planhub": {"category": "Bid site", "freq": "Weekly", "last": "", "name": "PlanHub", "notes": "Supplier listing for project bid invites; good for finding which subs are bidding a job.", "order": 17, "url": "https://planhub.com"}, "plano": {"category": "City permits", "freq": "Every 2 weeks", "last": "", "name": "Plano: city site (Building Inspections)", "notes": "Search 'Building Inspections' for the permit portal. Large office/corporate finish-out market.", "order": 8, "url": "https://www.plano.gov"}, "prosper-permits": {"category": "City permits", "freq": "Every 2 weeks", "last": "", "name": "Prosper: Building Inspections", "notes": "One of the fastest-growing towns in Collin County. New retail, medical and school construction along US-380 and the Dallas North Tollway.", "order": 29, "url": "https://prospertx.gov/332/Building-Inspections"}, "richardson-permits": {"category": "City permits", "freq": "Every 2 weeks", "last": "", "name": "Richardson: online permits", "notes": "Search commercial new construction and interior finish permits. Telecom Corridor and CityLine office finish-outs.", "order": 24, "url": "https://www.cor.net/departments/building-inspection/online-permits"}, "sachse-permits": {"category": "City permits", "freq": "Monthly", "last": "", "name": "Sachse: Building Permits & Inspections", "notes": "Smaller market; check for new retail and medical along SH-78 and PGBT.", "order": 27, "url": "https://www.cityofsachse.com/265/Building-Permits-Inspections"}, "tdlr-tabs": {"category": "State", "freq": "Weekly", "last": "2026-10-22", "name": "TDLR TABS project search", "notes": "Texas projects of $50K or more register before construction. Filter by Dallas, Denton, Collin and Tarrant counties. Shows owner, design firm, est. cost and start date. Use 'alteration' to catch finish-outs.", "order": 1, "url": "https://www.tdlr.texas.gov/TABS/Search"}, "wylie-permits": {"category": "City permits", "freq": "Monthly", "last": "", "name": "Wylie: city site (Building Inspections)", "notes": "Search 'Building Inspections' for the permit portal. Growing retail along SH-78.", "order": 26, "url": "https://www.wylietexas.gov"}};</script>
+<script>
+(function () {
+  var KEY = "plt-data-v1";
+  var COLS = ["projects", "contacts", "quotes", "sources"];
+  var store = null, storageOk = true;
+  var clone = function (o) { return JSON.parse(JSON.stringify(o)); };
+  function persist() { try { localStorage.setItem(KEY, JSON.stringify(store)); return true; } catch (e) { storageOk = false; return false; } }
+  function load() {
+    try { store = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { store = null; storageOk = false; }
+    if (!store || typeof store !== "object") {
+      store = { projects: {}, contacts: {}, quotes: {}, sources: clone(window.PLT_SEED_SOURCES || {}) };
+      persist();
+    }
+    COLS.forEach(function (c) { if (!store[c] || typeof store[c] !== "object") store[c] = {}; });
+  }
+  var subs = {};
+  var meta = { fromCache: false, hasPendingWrites: false };
+  function snap(k) {
+    var docs = Object.keys(store[k]).map(function (id) { var d = store[k][id]; return { id: id, exists: true, data: function () { return d; }, metadata: meta }; });
+    return { docs: docs, size: docs.length, empty: !docs.length, metadata: meta, docChanges: function () { return []; } };
+  }
+  function fire(k) { (subs[k] || []).forEach(function (fn) { try { fn(snap(k)); } catch (e) { console.error(e); } }); }
+  function write(k, fn) {
+    var before = JSON.stringify(store[k]);
+    fn();
+    if (!persist()) { store[k] = JSON.parse(before); return Promise.reject({ code: "quota_exceeded", message: "This device's storage is full or blocked." }); }
+    fire(k); return Promise.resolve();
+  }
+  function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+  var db = {
+    collection: function (k) {
+      return {
+        path: k,
+        onSnapshot: function (next) {
+          (subs[k] = subs[k] || []).push(next);
+          setTimeout(function () { next(snap(k)); }, 0);
+          return function () { subs[k] = (subs[k] || []).filter(function (f) { return f !== next; }); };
+        },
+        add: function (d) { var id = newId(); return write(k, function () { store[k][id] = clone(d); }).then(function () { return { id: id }; }); },
+        doc: function (id) {
+          id = id || newId();
+          return {
+            id: id,
+            get: function () { var d = store[k][id]; return Promise.resolve({ id: id, exists: !!d, data: function () { return d; }, metadata: meta }); },
+            set: function (d) { return write(k, function () { store[k][id] = clone(d); }); },
+            update: function (d) { if (!store[k][id]) return Promise.reject({ code: "invalid_argument", message: "Not found" }); return write(k, function () { Object.assign(store[k][id], clone(d)); }); },
+            delete: function () { return write(k, function () { delete store[k][id]; }); }
+          };
+        }
+      };
+    }
+  };
+  window.addEventListener("storage", function (e) { if (e.key === KEY) { load(); COLS.forEach(fire); } });
+  var downloads = {
+    save: function (o) {
+      var blob = o.data instanceof Blob ? o.data : new Blob([o.data], { type: /\.json$/i.test(o.filename) ? "application/json" : "text/csv" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = o.filename;
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+      return Promise.resolve();
+    }
+  };
+  window.PLT_LOCAL = {
+    downloads: downloads,
+    storageOk: function () { return storageOk; },
+    exportAll: function () { return JSON.stringify({ app: "pro-lead-tracker", version: 1, exported: new Date().toISOString(), data: store }, null, 2); },
+    applyFeed: function (feed, extra) {
+      var SEEN = "plt-feed-seen-v1", seen = {};
+      try { seen = JSON.parse(localStorage.getItem(SEEN) || "{}") || {}; } catch (e) { seen = {}; }
+      var before = JSON.stringify(store), r = { projects: 0, contacts: 0, phones: 0, notes: 0 };
+      var key = function (s) { return String(s || "").toLowerCase().replace(/^the /, "").replace(/[^a-z0-9]/g, ""); };
+      ["projects", "contacts"].forEach(function (col) {
+        var src = (feed && feed[col]) || {};
+        Object.keys(src).forEach(function (id) {
+          var d = src[id]; if (!d || typeof d !== "object") return;
+          var mine = store[col][id];
+          if (!mine) {
+            if (seen[col + "/" + id]) return; // you deleted it; don't bring it back
+            var copy = clone(d); copy._feedNotes = d.notes || "";
+            store[col][id] = copy; r[col]++;
+          } else if (col === "contacts") {
+            if (!mine.phone && d.phone) { mine.phone = d.phone; r.phones++; }
+            if (!mine.email && d.email) mine.email = d.email;
+            if (!mine.project && d.project) mine.project = d.project;
+            // New permits get appended to notes, but only if you haven't edited the notes yourself.
+            if (d.notes && mine._feedNotes !== undefined && mine.notes === mine._feedNotes && d.notes !== mine.notes) { mine.notes = d.notes; mine._feedNotes = d.notes; r.notes++; }
+          }
+          seen[col + "/" + id] = 1;
+        });
+      });
+      var ex = (extra && extra.contacts) || {};
+      var byCo = {};
+      Object.keys(store.contacts).forEach(function (id) { byCo[key(store.contacts[id].company)] = id; });
+      Object.keys(ex).forEach(function (id) {
+        var e = ex[id]; if (!e || typeof e !== "object") return;
+        var mine = store.contacts[id] || store.contacts[byCo[key(e.company)]];
+        if (!mine) return;
+        if (!mine.phone && e.phone) { mine.phone = e.phone; r.phones++; }
+        if (!mine.email && e.email) mine.email = e.email;
+        if ((!mine.name || mine.name === "(main office)") && e.name && e.name !== "(main office)") mine.name = e.name;
+      });
+      if (r.projects || r.contacts || r.phones || r.notes) {
+        if (!persist()) { store = JSON.parse(before); throw new Error("Not enough storage on this device for the new leads."); }
+        COLS.forEach(fire);
+      }
+      try { localStorage.setItem(SEEN, JSON.stringify(seen)); } catch (e) {}
+      return r;
+    },
+    importAll: function (text) {
+      var o; try { o = JSON.parse(text); } catch (e) { throw new Error("That file isn't a Pro Lead Tracker backup."); }
+      if (o && o.app === "pro-lead-tracker-phones") { var pr = window.PLT_LOCAL.applyFeed(null, o); return pr.phones; }
+      var d = o && o.data;
+      if (!d || typeof d !== "object" || !COLS.some(function (c) { return d[c] && typeof d[c] === "object"; })) throw new Error("That file isn't a Pro Lead Tracker backup.");
+      var before = JSON.stringify(store), n = 0;
+      COLS.forEach(function (c) { if (d[c] && typeof d[c] === "object") Object.keys(d[c]).forEach(function (id) { if (d[c][id] && typeof d[c][id] === "object") { store[c][id] = d[c][id]; n++; } }); });
+      if (!persist()) { store = JSON.parse(before); throw new Error("Not enough storage on this device to restore."); }
+      COLS.forEach(fire); return n;
+    }
+  };
+  load();
+  window.claude = { use: function (n) { return Promise.resolve(n === "db" ? db : n === "downloads" ? downloads : null); } };
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) {}
+})();
+</script>
+<script>
+(() => {
+  const STAGES = ["Zoning / P&Z", "TDLR registered", "Permit applied", "Bidding", "Awarded", "Quoted", "Won", "Lost"];
+  const STAGE_TONE = { "Zoning / P&Z": "early", "TDLR registered": "early", "Permit applied": "early", "Bidding": "mid", "Awarded": "mid", "Quoted": "", "Won": "good", "Lost": "dim" };
+  const QUOTE_TONE = { Pending: "mid", Revised: "early", Won: "good", Lost: "dim" };
+  const FREQ_DAYS = { Daily: 1, Weekly: 7, "Every 2 weeks": 14, Monthly: 30, "As needed": 0 };
+
+  const TABS = {
+    projects: {
+      label: "Pipeline", noun: "project",
+      fields: [
+        { key: "name", label: "Project name", required: true, wide: true },
+        { key: "address", label: "Address" },
+        { key: "city", label: "City" },
+        { key: "type", label: "Type", type: "select", options: ["Tenant finish-out", "Remodel / alteration", "Multifamily", "Senior living", "Ground-up commercial", "School / public", "Property mgmt / MRO", "Other"] },
+        { key: "stage", label: "Stage", type: "select", options: STAGES },
+        { key: "value", label: "Est. project value ($)", type: "number" },
+        { key: "materials", label: "Est. Lowe's material $", type: "number" },
+        { key: "gc", label: "General contractor" },
+        { key: "sub", label: "Key sub(s)" },
+        { key: "source", label: "Found via", type: "select", options: ["TDLR TABS", "City permit portal", "P&Z agenda", "BuildingConnected", "PlanHub", "ESBD / public bid", "Paid lead service", "News", "Referral", "Walk-in / Pro desk", "Other"] },
+        { key: "ref", label: "TDLR / permit #" },
+        { key: "next", label: "Next follow-up", type: "date" },
+        { key: "notes", label: "Notes", type: "textarea", wide: true }
+      ]
+    },
+    contacts: {
+      label: "Contacts", noun: "contact",
+      fields: [
+        { key: "name", label: "Name", required: true },
+        { key: "company", label: "Company" },
+        { key: "role", label: "Role", type: "select", options: ["Permit applicant", "GC estimator", "GC project manager", "GC superintendent", "Subcontractor", "Owner / developer", "Architect / engineer", "Property manager", "Purchasing", "Other"] },
+        { key: "trade", label: "Trade" },
+        { key: "phone", label: "Phone", type: "tel" },
+        { key: "email", label: "Email", type: "email" },
+        { key: "project", label: "Project", type: "project" },
+        { key: "last", label: "Last contact", type: "date" },
+        { key: "notes", label: "Notes", type: "textarea", wide: true }
+      ]
+    },
+    quotes: {
+      label: "Quotes", noun: "quote",
+      fields: [
+        { key: "number", label: "Quote #" },
+        { key: "project", label: "Project", type: "project" },
+        { key: "customer", label: "Customer (company)", required: true },
+        { key: "scope", label: "Scope / materials" },
+        { key: "amount", label: "Amount ($)", type: "number" },
+        { key: "status", label: "Status", type: "select", options: ["Pending", "Revised", "Won", "Lost"] },
+        { key: "sent", label: "Date sent", type: "date" },
+        { key: "next", label: "Follow-up", type: "date" },
+        { key: "notes", label: "Notes (lost reason, competitor, etc.)", type: "textarea", wide: true }
+      ]
+    },
+    sources: {
+      label: "Lead sources", noun: "source",
+      fields: [
+        { key: "name", label: "Source", required: true, wide: true },
+        { key: "category", label: "Category", type: "select", options: ["State", "City permits", "County", "P&Z agendas", "Bid site", "Public bids", "Paid service", "News"] },
+        { key: "freq", label: "Check", type: "select", options: Object.keys(FREQ_DAYS) },
+        { key: "url", label: "Link", type: "url", wide: true },
+        { key: "last", label: "Last checked", type: "date" },
+        { key: "order", label: "Sort order", type: "number" },
+        { key: "notes", label: "What to look for", type: "textarea", wide: true }
+      ]
+    }
+  };
+
+  const FILTERS = {
+    projects: [{ key: "type" }, { key: "source" }, { key: "city", dyn: true }, { key: "gc", dyn: true }],
+    contacts: [{ key: "role" }, { key: "company", dyn: true }, { key: "project" }],
+    quotes: [{ key: "status" }, { key: "customer", dyn: true }, { key: "project" }],
+    sources: [{ key: "category" }, { key: "freq" }, { key: "_due", label: "Status", options: ["Due", "Checked today", "Current"] }]
+  };
+  const SORTS = {
+    projects: [["next", "Next follow-up"], ["az", "Name A–Z"], ["za", "Name Z–A"], ["value", "Value (high to low)"], ["stage", "Stage"], ["new", "Newest first"]],
+    contacts: [["az", "Name A–Z"], ["za", "Name Z–A"], ["company", "Company A–Z"], ["last", "Last contact (recent)"], ["new", "Newest first"]],
+    quotes: [["next", "Follow-up date"], ["az", "Customer A–Z"], ["za", "Customer Z–A"], ["amount", "Amount (high to low)"], ["sent", "Date sent (recent)"], ["new", "Newest first"]],
+    sources: [["due", "Due first"], ["az", "Name A–Z"], ["za", "Name Z–A"], ["category", "Category A–Z"], ["last", "Last checked (oldest)"]]
+  };
+  const NAMEKEY = { projects: "name", contacts: "name", quotes: "customer", sources: "name" };
+
+  const data = { projects: [], contacts: [], quotes: [], sources: [] };
+  let db = null, downloads = null, readOnly = false, mcp = null, inApp = false;
+  let tab = "projects", q = "", stageFilter = "";
+  let filters = { projects: {}, contacts: {}, quotes: {}, sources: {} };
+  let sorts = { projects: "next", contacts: "az", quotes: "next", sources: "due" };
+  let srcView = "today";
+  try {
+    const sv = JSON.parse(localStorage.getItem("plt-view") || "null");
+    if (sv && sv.filters) Object.keys(filters).forEach(k => { if (sv.filters[k]) filters[k] = sv.filters[k]; });
+    if (sv && sv.sorts) Object.keys(sorts).forEach(k => { if (SORTS[k].some(o => o[0] === sv.sorts[k])) sorts[k] = sv.sorts[k]; });
+    if (sv && (sv.srcView === "all" || sv.srcView === "today")) srcView = sv.srcView;
+  } catch (e) {}
+  const saveView = () => { try { localStorage.setItem("plt-view", JSON.stringify({ filters, sorts, srcView })); } catch (e) {} };
+
+  try { const t = localStorage.getItem("plt-tab"); if (TABS[t]) tab = t; } catch (e) {}
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const money = n => { n = Number(n) || 0; return n >= 1e6 ? "$" + (n / 1e6).toFixed(n >= 1e7 ? 0 : 1) + "M" : n >= 1e4 ? "$" + Math.round(n / 1e3) + "K" : "$" + n.toLocaleString("en-US"); };
+  const moneyFull = n => n === "" || n == null ? "" : "$" + (Number(n) || 0).toLocaleString("en-US");
+  const todayStr = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  const daysBetween = (a, b) => Math.round((Date.parse(b + "T12:00:00") - Date.parse(a + "T12:00:00")) / 864e5);
+  const fmtDate = s => { if (!s) return ""; const d = new Date(s + "T12:00:00"); return isNaN(d) ? s : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: d.getFullYear() === new Date().getFullYear() ? undefined : "numeric" }); };
+  const projectName = id => (data.projects.find(p => p.id === id) || {}).name || "";
+
+  function dueClass(d, closed) {
+    if (!d || closed) return "";
+    const diff = daysBetween(todayStr(), d);
+    return diff < 0 ? "due-over" : diff === 0 ? "due-today" : diff <= 7 ? "due-soon" : "";
+  }
+  function dueLabel(d, closed) {
+    if (!d) return "<span class='meta'>—</span>";
+    const c = dueClass(d, closed);
+    const diff = daysBetween(todayStr(), d);
+    const tail = closed ? "" : diff < 0 ? ` · ${-diff}d late` : diff === 0 ? " · today" : "";
+    return `<span class="${c}">${esc(fmtDate(d))}${tail}</span>`;
+  }
+  function sourceDue(s) {
+    const days = FREQ_DAYS[s.freq] ?? 7;
+    if (!days) return false;
+    if (!s.last) return true;
+    return daysBetween(s.last, todayStr()) >= days;
+  }
+  const checkedToday = s => s.last === todayStr();
+  const onTodayList = s => checkedToday(s) ? (s.todayDue !== false) : sourceDue(s);
+  const sourceStatus = s => checkedToday(s) ? "Checked today" : sourceDue(s) ? "Due" : "Current";
+  function todayProgress() {
+    const list = data.sources.filter(onTodayList);
+    return { total: list.length, done: list.filter(checkedToday).length };
+  }
+  const isClosedProject = p => p.stage === "Won" || p.stage === "Lost";
+  const isClosedQuote = x => x.status === "Won" || x.status === "Lost";
+
+  function setStatus(msg, err) { const el = $("status"); el.textContent = msg; el.classList.toggle("err", !!err); }
+
+  function renderSummary() {
+    const open = data.projects.filter(p => !isClosedProject(p));
+    $("s-pipe").textContent = money(open.reduce((a, p) => a + (Number(p.materials) || Number(p.value) || 0), 0));
+    $("s-pipe-n").textContent = `${open.length} active project${open.length === 1 ? "" : "s"} · material $ where set`;
+    const t = todayStr();
+    const over = data.projects.filter(p => !isClosedProject(p) && p.next && p.next < t).length + data.quotes.filter(x => !isClosedQuote(x) && x.next && x.next < t).length;
+    $("s-over").textContent = over; $("s-over").classList.toggle("bad", over > 0);
+    const pend = data.quotes.filter(x => !isClosedQuote(x));
+    $("s-pend").textContent = money(pend.reduce((a, x) => a + (Number(x.amount) || 0), 0));
+    $("s-pend-n").textContent = `${pend.length} out`;
+    const won = data.quotes.filter(x => x.status === "Won"), lost = data.quotes.filter(x => x.status === "Lost");
+    $("s-won").textContent = money(won.reduce((a, x) => a + (Number(x.amount) || 0), 0));
+    $("s-won-n").textContent = won.length + lost.length ? `Win rate ${Math.round(100 * won.length / (won.length + lost.length))}% (${won.length} of ${won.length + lost.length})` : "Win rate —";
+    const tp = todayProgress();
+    $("s-src").textContent = tp.total - tp.done;
+    $("s-src-n").textContent = tp.total ? `${tp.done} of ${tp.total} checked today` : "Nothing due today";
+  }
+
+  function renderTabs() {
+    $("tabs").innerHTML = Object.entries(TABS).map(([k, t]) =>
+      `<button role="tab" id="tab-${k}" aria-selected="${k === tab}" data-tab="${k}">${t.label}<span class="count">${data[k].length}</span></button>`).join("");
+  }
+
+  function renderToolbar() {
+    const t = TABS[tab];
+    const sort = `<select id="sort" aria-label="Sort">${SORTS[tab].map(([v, l]) => `<option value="${v}" ${sorts[tab] === v ? "selected" : ""}>Sort: ${l}</option>`).join("")}</select>`;
+    const fsel = FILTERS[tab].map(f => {
+      const opts = filterOptions(tab, f);
+      const cur = filters[tab][f.key] || "";
+      const label = filterLabel(tab, f);
+      return `<select data-filter="${f.key}" aria-label="Filter by ${esc(label)}" class="${cur ? "on" : ""}"><option value="">${esc(label)}: all</option>${opts.map(([v, l]) => `<option value="${esc(v)}" ${v === cur ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
+    }).join("");
+    const active = Object.values(filters[tab]).some(Boolean) || (tab === "projects" && stageFilter) || q;
+    $("toolbar").innerHTML = `<div class="grow"><input id="search" type="search" placeholder="Search ${t.label.toLowerCase()}…" value="${esc(q)}" aria-label="Search"></div>
+      ${sort}
+      <button class="btn" id="export" type="button" ${downloads ? "" : "hidden"}>Export CSV</button>
+      ${tab === "contacts" && downloads && !window.PLT_LOCAL ? `<button class="btn" id="sendphones" type="button" title="Saves contacts-extra.json for the installed app">Send phones to app</button>` : ""}
+      <button class="btn primary" id="add" type="button" ${db && !readOnly ? "" : "disabled"}>Add ${t.noun}</button>
+      <div class="filters">${fsel}<button class="btn small" id="clear" type="button" ${active ? "" : "hidden"}>Clear filters</button><span class="meta" id="shown"></span></div>`;
+    if (tab === "projects") {
+      const counts = Object.fromEntries(STAGES.map(s => [s, 0]));
+      data.projects.forEach(p => { if (counts[p.stage] != null) counts[p.stage]++; });
+      $("stages").innerHTML = [`<button type="button" data-stage="" aria-pressed="${!stageFilter}">All<span class="c">${data.projects.length}</span></button>`]
+        .concat(STAGES.map(s => `<button type="button" data-stage="${esc(s)}" aria-pressed="${stageFilter === s}">${esc(s)}<span class="c">${counts[s]}</span></button>`)).join("");
+      $("stages").hidden = false;
+    } else { $("stages").hidden = true; $("stages").innerHTML = ""; }
+  }
+
+  function matches(row) {
+    if (!q) return true;
+    const needle = q.toLowerCase();
+    return Object.values(row).some(v => String(v).toLowerCase().includes(needle)) || (row.project && projectName(row.project).toLowerCase().includes(needle));
+  }
+
+  function filterLabel(k, f) {
+    if (f.label) return f.label;
+    const fd = TABS[k].fields.find(x => x.key === f.key);
+    return fd ? fd.label.replace(/\s*\(.*\)$/, "") : f.key;
+  }
+  function filterOptions(k, f) {
+    if (f.options) return f.options.map(o => [o, o]);
+    const fd = TABS[k].fields.find(x => x.key === f.key) || {};
+    if (fd.type === "project") {
+      const used = new Set(data[k].map(r => r.project).filter(Boolean));
+      return data.projects.filter(p => used.has(p.id)).sort((a, b) => cmpStr(a.name, b.name)).map(p => [p.id, p.name]);
+    }
+    if (f.dyn) return [...new Set(data[k].map(r => String(r[f.key] ?? "").trim()).filter(Boolean))].sort(cmpStr).map(v => [v, v]);
+    return (fd.options || []).map(o => [o, o]);
+  }
+  const cmpStr = (a, b) => String(a ?? "").localeCompare(String(b ?? ""), undefined, { sensitivity: "base", numeric: true });
+
+  function rowsFor(k) {
+    let rows = data[k].filter(matches);
+    if (k === "projects" && stageFilter) rows = rows.filter(p => p.stage === stageFilter);
+    if (k === "sources" && srcView === "today") rows = rows.filter(onTodayList);
+    for (const f of FILTERS[k]) {
+      const v = filters[k][f.key];
+      if (!v) continue;
+      rows = rows.filter(r => f.key === "_due" ? sourceStatus(r) === v : String(r[f.key] ?? "").trim() === v);
+    }
+    const nk = NAMEKEY[k], far = "9999-12-31";
+    const blankLast = (a, b, key, fn) => (!a[key]) - (!b[key]) || fn(a, b);
+    const S = {
+      az: (a, b) => blankLast(a, b, nk, () => cmpStr(a[nk], b[nk])),
+      za: (a, b) => blankLast(a, b, nk, () => cmpStr(b[nk], a[nk])),
+      new: (a, b) => cmpStr(b.created, a.created),
+      next: k === "projects"
+        ? (a, b) => (isClosedProject(a) - isClosedProject(b)) || (a.next || far).localeCompare(b.next || far)
+        : (a, b) => (isClosedQuote(a) - isClosedQuote(b)) || (a.next || far).localeCompare(b.next || far),
+      value: (a, b) => (Number(b.materials) || Number(b.value) || 0) - (Number(a.materials) || Number(a.value) || 0),
+      stage: (a, b) => STAGES.indexOf(a.stage) - STAGES.indexOf(b.stage) || cmpStr(a.name, b.name),
+      company: (a, b) => blankLast(a, b, "company", () => cmpStr(a.company, b.company) || cmpStr(a.name, b.name)),
+      last: k === "sources" ? (a, b) => (a.last || "").localeCompare(b.last || "") : (a, b) => (b.last || "").localeCompare(a.last || ""),
+      amount: (a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0),
+      sent: (a, b) => (b.sent || "").localeCompare(a.sent || ""),
+      due: (a, b) => (sourceDue(b) - sourceDue(a)) || (checkedToday(b) - checkedToday(a)) || (Number(a.order) || 999) - (Number(b.order) || 999),
+      category: (a, b) => cmpStr(a.category, b.category) || cmpStr(a.name, b.name)
+    };
+    rows.sort(S[sorts[k]] || S.az);
+    return rows;
+  }
+
+  const EMPTY = {
+    projects: ["No projects yet", "Start with this week's TDLR TABS search or a finish-out permit from a city portal. Add the project, the GC, and when you'll call."],
+    contacts: ["No contacts yet", "Add the estimators, PMs and subs you talk to. Link each one to a project so you know who to call."],
+    quotes: ["No quotes logged", "Log every quote you send with a follow-up date. Mark it Won or Lost to track your win rate."],
+    sources: ["No lead sources", "Add the sites you check for new projects and how often to check them."]
+  };
+
+  function renderTable() {
+    const rows = rowsFor(tab);
+    const box = $("tablebox");
+    const shown = $("shown");
+    if (shown) shown.textContent = rows.length === data[tab].length ? "" : `Showing ${rows.length} of ${data[tab].length}`;
+    renderCheckin();
+    if (tab === "sources" && srcView === "today" && db && data.sources.length && !data.sources.some(onTodayList)) {
+      box.innerHTML = `<div class="empty"><strong>Nothing due today</strong><span>Every source is current. Set a source's Check to Daily to put it on this list every morning.</span><button class="btn" type="button" data-view="all">Show all sources</button></div>`;
+      return;
+    }
+    if (!db && !data[tab].length) { box.innerHTML = `<div class="empty"><strong>Loading…</strong><span>Your saved ${TABS[tab].label.toLowerCase()} will appear here.</span></div>`; return; }
+    if (!rows.length) {
+      const [h, p] = data[tab].length ? ["No matches", "Try a different search or filter, or click Clear filters."] : EMPTY[tab];
+      box.innerHTML = `<div class="empty"><strong>${h}</strong><span>${p}</span>${data[tab].length || readOnly || !db ? "" : `<button class="btn primary" type="button" data-act="add">Add ${TABS[tab].noun}</button>`}</div>`;
+      return;
+    }
+    let head, body;
+    if (tab === "projects") {
+      head = ["Project", "Stage", "Type", "GC / sub", "Value", "Next follow-up", "Notes"];
+      body = rows.map(p => `<tr class="row" data-id="${esc(p.id)}" tabindex="0">
+        <td><div class="name">${esc(p.name)}</div><div class="meta">${esc([p.address, p.city].filter(Boolean).join(", "))}${p.ref ? " · #" + esc(p.ref) : ""}</div></td>
+        <td><span class="pill ${STAGE_TONE[p.stage] || ""}">${esc(p.stage || "—")}</span></td>
+        <td>${esc(p.type || "")}<div class="meta">${esc(p.source || "")}</div></td>
+        <td>${esc(p.gc || "—")}<div class="meta">${esc(p.sub || "")}</div></td>
+        <td class="num">${p.value ? esc(money(p.value)) : "—"}${p.materials ? `<div class="meta">Matl ${esc(money(p.materials))}</div>` : ""}</td>
+        <td class="date">${dueLabel(p.next, isClosedProject(p))}</td>
+        <td class="notes">${esc(p.notes || "")}</td></tr>`);
+    } else if (tab === "contacts") {
+      head = ["Name", "Company", "Role", "Phone / email", "Project", "Last contact"];
+      body = rows.map(c => `<tr class="row" data-id="${esc(c.id)}" tabindex="0">
+        <td><div class="name">${esc(c.name)}</div><div class="meta">${esc(c.trade || "")}</div></td>
+        <td>${esc(c.company || "")}</td>
+        <td>${esc(c.role || "")}</td>
+        <td><div class="date">${esc(c.phone || "")}</div><div class="meta">${esc(c.email || "")}</div></td>
+        <td>${esc(projectName(c.project))}</td>
+        <td class="date">${c.last ? esc(fmtDate(c.last)) : "<span class='meta'>—</span>"}</td></tr>`);
+    } else if (tab === "quotes") {
+      head = ["Quote", "Customer", "Project", "Scope", "Amount", "Status", "Sent", "Follow-up"];
+      body = rows.map(x => `<tr class="row" data-id="${esc(x.id)}" tabindex="0">
+        <td class="date">${esc(x.number || "—")}</td>
+        <td><div class="name">${esc(x.customer)}</div></td>
+        <td>${esc(projectName(x.project))}</td>
+        <td>${esc(x.scope || "")}</td>
+        <td class="num">${esc(moneyFull(x.amount))}</td>
+        <td><span class="pill ${QUOTE_TONE[x.status] || ""}">${esc(x.status || "—")}</span></td>
+        <td class="date">${esc(fmtDate(x.sent))}</td>
+        <td class="date">${dueLabel(x.next, isClosedQuote(x))}</td></tr>`);
+    } else {
+      head = ["Source", "Category", "Check", "Last checked", "What to look for", ""];
+      const can = db && !readOnly ? "" : "disabled";
+      body = rows.map(s => {
+        const st = sourceStatus(s);
+        const done = st === "Checked today";
+        const hasUrl = /^https?:\/\//i.test(s.url || "");
+        const link = hasUrl ? `<a href="${esc(s.url)}" target="_blank" rel="noopener" data-stop="1" data-src="${esc(s.url)}">${esc(s.name)}</a>${inApp ? ` <a class="ext" href="${esc(s.url)}" target="_blank" rel="noopener" data-stop="1">Open in browser</a>` : ""}` : esc(s.name);
+        const pill = done ? "<span class='pill good'>Checked today</span>" : st === "Due" ? "<span class='pill mid'>Due</span>" : "<span class='pill dim'>Current</span>";
+        const btn = done
+          ? `<button class="btn small" type="button" data-uncheck="${esc(s.id)}" ${can}>Undo</button>`
+          : `<button class="btn small ${st === "Due" ? "primary" : ""}" type="button" data-check="${esc(s.id)}" ${can}>Mark checked</button>`;
+        const lastTxt = done ? (s.prevLast ? "Before: " + esc(fmtDate(s.prevLast)) : "First check") : s.last ? esc(fmtDate(s.last)) : "<span class='meta'>Never</span>";
+        return `<tr class="row ${done ? "done" : ""}" data-id="${esc(s.id)}" tabindex="0">
+        <td><div class="name">${link}</div></td>
+        <td>${esc(s.category || "")}</td>
+        <td>${esc(s.freq || "")}</td>
+        <td class="date">${pill}<div class="meta">${lastTxt}</div></td>
+        <td class="notes">${esc(s.notes || "")}</td>
+        <td>${btn}</td></tr>`;
+      });
+    }
+    box.innerHTML = `<table><thead><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${body.join("")}</tbody></table>`;
+  }
+
+  function renderCheckin() {
+    const el = $("checkin");
+    if (tab !== "sources") { el.hidden = true; return; }
+    const { total, done } = todayProgress();
+    const pct = total ? Math.round(100 * done / total) : 100;
+    const day = new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+    const msg = !total ? "Nothing due today." : done === total ? "All done for today." : `${total - done} left.`;
+    el.innerHTML = `<div class="row1">
+        <h2>Today's check-in · ${esc(day)}</h2>
+        <div class="seg" role="group" aria-label="Show">
+          <button type="button" data-view="today" aria-pressed="${srcView === "today"}">Today's list</button>
+          <button type="button" data-view="all" aria-pressed="${srcView === "all"}">All sources</button>
+        </div>
+      </div>
+      <div class="bar ${total && done === total ? "done" : ""}" role="progressbar" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${done}" aria-label="Sources checked today"><span style="width:${pct}%"></span></div>
+      <div class="prog"><strong>${done} of ${total}</strong> checked today · ${msg} The list resets each morning.</div>
+      ${inApp ? `<p class="hint">Source links open in Claude's built-in browser, next to this tracker.</p>` : ""}`;
+    el.hidden = false;
+  }
+
+  function render() { renderSummary(); renderTabs(); renderToolbar(); renderTable(); }
+
+  // Roll over to a fresh list at midnight, or when the page comes back after the day changed.
+  let shownDay = todayStr();
+  function checkDayRollover() { const t = todayStr(); if (t !== shownDay) { shownDay = t; if (!editing) render(); else renderSummary(); } }
+  setInterval(checkDayRollover, 60000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) checkDayRollover(); });
+  window.addEventListener("focus", checkDayRollover);
+  function renderBody() { renderSummary(); renderTabs(); renderTable(); }
+
+  // ---------- Edit sheet ----------
+  let editing = null, armed = false;
+  function openSheet(id) {
+    const t = TABS[tab];
+    const row = id ? data[tab].find(r => r.id === id) : null;
+    if (id && !row) return;
+    editing = { tab, id };
+    armed = false;
+    const v = row || (tab === "projects" ? { stage: "Zoning / P&Z" } : tab === "quotes" ? { status: "Pending", sent: todayStr() } : tab === "sources" ? { freq: "Weekly" } : {});
+    const projOpts = data.projects.slice().sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    const fieldHtml = t.fields.map(f => {
+      const val = v[f.key] ?? "";
+      const id = `f-${tab}-${f.key}`;
+      let ctl;
+      if (f.type === "select") ctl = `<select id="${id}" name="${f.key}"><option value=""></option>${f.options.map(o => `<option ${o === val ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+      else if (f.type === "project") ctl = `<select id="${id}" name="${f.key}"><option value="">—</option>${projOpts.map(p => `<option value="${esc(p.id)}" ${p.id === val ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select>`;
+      else if (f.type === "textarea") ctl = `<textarea id="${id}" name="${f.key}">${esc(val)}</textarea>`;
+      else ctl = `<input id="${id}" name="${f.key}" type="${f.type || "text"}" ${f.type === "number" ? 'inputmode="decimal" min="0" step="any"' : ""} value="${esc(val)}" ${f.required ? "required" : ""}>`;
+      return `<label class="f ${f.wide ? "wide" : ""}" for="${id}"><span>${f.label}${f.required ? " *" : ""}</span>${ctl}</label>`;
+    }).join("");
+    const ro = readOnly || !db;
+    $("sheet").innerHTML = `<h2>${row ? "Edit" : "New"} ${t.noun}</h2>
+      ${ro ? `<p class="banner">You can view this ${t.noun}, but saving is not available here.</p>` : ""}
+      <div class="grid">${fieldHtml}</div>
+      <p class="hint" id="sheet-msg" role="status"></p>
+      <div class="actions">
+        <div>${row && !ro ? `<button type="button" class="btn danger" id="del">Delete</button>` : ""}</div>
+        <div class="right"><button type="button" class="btn" id="cancel">Cancel</button>${ro ? "" : `<button type="submit" class="btn primary" id="save">Save</button>`}</div>
+      </div>`;
+    lockPage();
+    $("overlay").hidden = false;
+    $("overlay").scrollTop = 0;
+    // On phones and tablets, don't pop the keyboard just to look at a record.
+    const touch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    if (!touch) { const first = $("sheet").querySelector("input, select, textarea"); if (first) first.focus({ preventScroll: true }); }
+  }
+  let lockedY = null;
+  function lockPage() {
+    if (lockedY !== null) return;
+    lockedY = window.scrollY;
+    const b = document.body.style;
+    b.position = "fixed"; b.top = -lockedY + "px"; b.left = "0"; b.right = "0"; b.width = "100%";
+  }
+  function unlockPage() {
+    if (lockedY === null) return;
+    const y = lockedY; lockedY = null;
+    const b = document.body.style;
+    b.position = b.top = b.left = b.right = b.width = "";
+    window.scrollTo(0, y);
+    return y;
+  }
+  function closeSheet() {
+    const id = editing && editing.id;
+    $("overlay").hidden = true; $("sheet").innerHTML = ""; editing = null;
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    const y = unlockPage();
+    render();
+    if (y != null) window.scrollTo(0, y);
+    const touch = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+    if (id && !touch) { const row = document.querySelector(`tr.row[data-id="${CSS.escape(id)}"]`); if (row) row.focus({ preventScroll: true }); }
+  }
+
+  async function saveSheet() {
+    const t = TABS[editing.tab];
+    const form = $("sheet");
+    const body = {};
+    for (const f of t.fields) {
+      const el = form.elements[f.key];
+      let val = el ? el.value.trim() : "";
+      if (f.type === "number") val = val === "" ? "" : Number(val.replace(/[$,]/g, ""));
+      if (f.type === "number" && Number.isNaN(val)) { $("sheet-msg").textContent = `${f.label} needs to be a number.`; el.focus(); return; }
+      if (f.required && !val) { $("sheet-msg").textContent = `${f.label} is required.`; el.focus(); return; }
+      body[f.key] = val;
+    }
+    const existing = editing.id ? data[editing.tab].find(r => r.id === editing.id) : null;
+    body.created = existing?.created || new Date().toISOString();
+    body.updated = new Date().toISOString();
+    $("save").disabled = true;
+    $("sheet-msg").textContent = "Saving…";
+    try {
+      if (editing.id) await db.collection(editing.tab).doc(editing.id).set(body);
+      else await db.collection(editing.tab).add(body);
+      closeSheet();
+      setStatus("Saved " + new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }));
+    } catch (e) {
+      handleWriteError(e);
+      const s = $("save"); if (s) s.disabled = false;
+      const m = $("sheet-msg"); if (m) m.textContent = writeMsg(e);
+    }
+  }
+  function writeMsg(e) {
+    const c = e && e.code;
+    return c === "invalid_argument" ? "You don't have permission to change this tracker." :
+      c === "quota_exceeded" ? "Storage is full. Delete old records, then try again." :
+      c === "resource_exhausted" ? "Too many saves at once. Wait a moment and try again." :
+      "Couldn't save right now. Check your connection and try again.";
+  }
+  function handleWriteError(e) {
+    if (e && e.code === "invalid_argument") { readOnly = true; showBanner("This tracker is view-only for you. Ask the owner for Contributor access to make changes."); render(); }
+    setStatus(writeMsg(e), true);
+  }
+  function showBanner(msg) { $("banner").textContent = msg; $("banner").hidden = false; }
+
+  async function deleteRow() {
+    const btn = $("del");
+    if (!armed) { armed = true; btn.classList.add("armed"); btn.textContent = "Click again to delete"; return; }
+    btn.disabled = true;
+    try { await db.collection(editing.tab).doc(editing.id).delete(); closeSheet(); setStatus("Deleted"); }
+    catch (e) { handleWriteError(e); btn.disabled = false; }
+  }
+
+  async function markChecked(id) {
+    const s = data.sources.find(r => r.id === id);
+    if (!s || checkedToday(s)) return;
+    try {
+      await db.collection("sources").doc(id).update({ last: todayStr(), prevLast: s.last || "", todayDue: sourceDue(s), updated: new Date().toISOString() });
+      setStatus("Marked checked");
+    } catch (e) { handleWriteError(e); }
+  }
+  async function openInApp(url, name) {
+    setStatus("Opening " + name + "…");
+    try {
+      await mcp.callTool("host:claude_browser", "preview_start", { url }, { cache: false });
+      setStatus("Opened " + name + " in Claude's browser");
+    } catch (err) {
+      const code = err && err.code;
+      if (code === "cancelled") { setStatus("Didn't open " + name + "."); return; }
+      if (code === "not_granted" || code === "permission_denied" || code === "server_not_connected" || code === "not_in_manifest" || code === "capability_disabled" || code === "blocked_by_policy") {
+        inApp = false; renderTable();
+        setStatus("Claude's browser isn't available here. Tap the link again to open it in your web browser.", true);
+      } else {
+        setStatus("Couldn't open " + name + " in Claude's browser. Use \"Open in browser\" instead.", true);
+      }
+    }
+  }
+  async function undoCheck(id) {
+    const s = data.sources.find(r => r.id === id);
+    if (!s || !checkedToday(s)) return;
+    try {
+      await db.collection("sources").doc(id).update({ last: s.prevLast || "", prevLast: "", todayDue: true, updated: new Date().toISOString() });
+      setStatus("Check undone");
+    } catch (e) { handleWriteError(e); }
+  }
+
+  // ---------- CSV ----------
+  // Phone numbers and emails for the installed app (upload to the GitHub project's data folder, or Restore it in the app).
+  async function sendPhones() {
+    const out = {};
+    data.contacts.forEach(c => {
+      if (!c.phone && !c.email) return;
+      out[c.id] = { company: c.company || "", name: c.name || "", phone: c.phone || "", email: c.email || "" };
+    });
+    const body = { app: "pro-lead-tracker-phones", version: 1, exported: new Date().toISOString(), contacts: out };
+    try {
+      await downloads.save({ filename: "contacts-extra.json", data: JSON.stringify(body, null, 1) });
+      setStatus(`Saved ${Object.keys(out).length} contacts with a phone or email`);
+    } catch (e) { setStatus("Save cancelled or unavailable.", true); }
+  }
+
+  async function exportCsv() {
+    const t = TABS[tab];
+    const cols = t.fields.map(f => f.key);
+    const quote = v => { const s = String(v ?? ""); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+    const lines = [t.fields.map(f => quote(f.label)).join(",")].concat(rowsFor(tab).map(r => cols.map(c => quote(c === "project" ? projectName(r[c]) : r[c])).join(",")));
+    try { await downloads.save({ filename: `lead-tracker-${tab}-${todayStr()}.csv`, data: lines.join("\n") }); }
+    catch (e) { setStatus("Export cancelled or unavailable.", true); }
+  }
+
+  // ---------- Events ----------
+  document.addEventListener("click", e => {
+    const tb = e.target.closest("[data-tab]");
+    if (tb) { tab = tb.dataset.tab; q = ""; stageFilter = ""; try { localStorage.setItem("plt-tab", tab); } catch (_) {} render(); return; }
+    const st = e.target.closest("[data-stage]");
+    if (st) { stageFilter = st.dataset.stage; renderToolbar(); renderTable(); return; }
+    if (e.target.closest("#clear")) { filters[tab] = {}; stageFilter = ""; q = ""; saveView(); renderToolbar(); renderTable(); return; }
+    if (e.target.closest("#add") || e.target.closest("[data-act='add']")) { openSheet(null); return; }
+    if (e.target.closest("#export")) { exportCsv(); return; }
+    if (e.target.closest("#sendphones")) { sendPhones(); return; }
+    const ck = e.target.closest("[data-check]");
+    if (ck) { e.stopPropagation(); markChecked(ck.dataset.check); return; }
+    const uk = e.target.closest("[data-uncheck]");
+    if (uk) { e.stopPropagation(); undoCheck(uk.dataset.uncheck); return; }
+    const vw = e.target.closest("[data-view]");
+    if (vw) { srcView = vw.dataset.view; saveView(); renderTable(); return; }
+    const sl = e.target.closest("a[data-src]");
+    if (sl && inApp) { e.preventDefault(); e.stopPropagation(); openInApp(sl.dataset.src, sl.textContent); return; }
+    if (e.target.closest("[data-stop]")) return;
+    const row = e.target.closest("tr.row");
+    if (row) { openSheet(row.dataset.id); return; }
+    if (e.target.closest("#cancel")) { closeSheet(); return; }
+    if (e.target.closest("#del")) { deleteRow(); return; }
+    if (e.target === $("overlay")) closeSheet();
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && !$("overlay").hidden) closeSheet();
+    if (e.key === "Enter" && e.target.matches && e.target.matches("tr.row")) openSheet(e.target.dataset.id);
+  });
+  document.addEventListener("input", e => {
+    if (e.target.id === "search") { q = e.target.value; const c = $("clear"); if (c) c.hidden = !(q || stageFilter || Object.values(filters[tab]).some(Boolean)); renderTable(); }
+  });
+  document.addEventListener("change", e => {
+    if (e.target.id === "sort") { sorts[tab] = e.target.value; saveView(); renderTable(); return; }
+    const fk = e.target.dataset && e.target.dataset.filter;
+    if (fk) {
+      if (e.target.value) filters[tab][fk] = e.target.value; else delete filters[tab][fk];
+      saveView(); renderToolbar(); renderTable();
+      const again = document.querySelector(`[data-filter="${fk}"]`); if (again) again.focus();
+    }
+  });
+  $("sheet").addEventListener("submit", e => { e.preventDefault(); if (editing && db && !readOnly) saveSheet(); });
+
+  render();
+
+  // ---------- Data ----------
+  (async () => {
+    const c = window.claude;
+    if (!c || !c.use) { setStatus("Saved data isn't available in this view.", true); showBanner("Open this tracker on claude.ai while signed in to see and save your leads."); return; }
+    c.use("downloads").then(d => { downloads = d; renderToolbar(); }).catch(() => {});
+    c.use("mcp").then(async m => {
+      mcp = m;
+      if (!m) return;
+      try {
+        const r = await m.listTools("host:claude_browser");
+        inApp = !!(r && r.servers || []).find(s => s.server === "host:claude_browser" && (s.tools || []).length);
+      } catch (e) { inApp = false; }
+      if (inApp && !editing) renderTable();
+    }).catch(() => {});
+    try { db = await c.use("db"); } catch (e) { db = null; }
+    if (!db) { setStatus("Saved data isn't available in this view.", true); showBanner("Sign in on claude.ai to see and save your leads."); render(); return; }
+    let loaded = 0;
+    Object.keys(data).forEach(k => {
+      let lastSig = null;
+      db.collection(k).onSnapshot(snap => {
+        if (!snap.metadata.fromCache && ++loaded <= 4 && loaded === 4) setStatus("Up to date");
+        let sig = null;
+        try { sig = JSON.stringify(snap.docs.map(d => [d.id, d.data()])); } catch (e) {}
+        if (sig !== null && sig === lastSig) return; // background refresh with no changes: leave the page alone
+        lastSig = sig;
+        data[k] = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+        if (editing) renderSummary();
+        else if (document.activeElement && document.activeElement.matches && document.activeElement.matches("#search, select")) { renderBody(); if (tab === "projects") renderStagesOnly(); }
+        else render();
+      }, err => { setStatus("Lost connection to saved data. Reload to reconnect.", true); });
+    });
+    setStatus("Loading saved data…");
+    render();
+  })();
+
+  function renderStagesOnly() {
+    const counts = Object.fromEntries(STAGES.map(s => [s, 0]));
+    data.projects.forEach(p => { if (counts[p.stage] != null) counts[p.stage]++; });
+    $("stages").querySelectorAll("[data-stage]").forEach(b => {
+      const s = b.dataset.stage; const c = b.querySelector(".c");
+      if (c) c.textContent = s ? counts[s] : data.projects.length;
+    });
+  }
+})();
+</script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var say = function (m, err) { var s = $("status"); s.textContent = m; s.classList.toggle("err", !!err); };
+  var stamp = function () { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  $("backup").addEventListener("click", function () {
+    PLT_LOCAL.downloads.save({ filename: "lead-tracker-backup-" + stamp() + ".json", data: new Blob([PLT_LOCAL.exportAll()], { type: "application/json" }) });
+    try { localStorage.setItem("plt-last-backup", stamp()); } catch (e) {}
+    say("Backup saved to your downloads");
+  });
+  $("restore").addEventListener("change", function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try {
+        var isPhones = /pro-lead-tracker-phones/.test(String(r.result).slice(0, 200));
+        var n = PLT_LOCAL.importAll(String(r.result));
+        say(isPhones ? "Filled in " + n + " phone numbers from " + f.name : "Restored " + n + " records from " + f.name);
+      }
+      catch (err) { say(err.message, true); }
+      e.target.value = "";
+    };
+    r.onerror = function () { say("Couldn't read that file.", true); };
+    r.readAsText(f);
+  });
+  if (!PLT_LOCAL.storageOk()) { var b = $("banner"); b.textContent = "This browser is blocking storage, so changes won't be saved. Open the app normally (not in a private window)."; b.hidden = false; }
+  // Install
+  var deferred = null, btn = $("install");
+  var standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; if (!standalone) btn.hidden = false; });
+  window.addEventListener("appinstalled", function () { btn.hidden = true; say("Installed"); });
+  btn.addEventListener("click", function () {
+    if (deferred) { deferred.prompt(); deferred.userChoice.finally(function () { deferred = null; btn.hidden = true; }); }
+  });
+  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (ios && !standalone) { var h = $("ioshint"); h.hidden = false; }
+  // Weekly permit data from the GitHub job: data/permits.json (new permits) and data/contacts-extra.json (phones).
+  var lastSync = 0, syncing = false;
+  function getJSON(path) {
+    return fetch(path + "?t=" + Date.now(), { cache: "no-store" }).then(function (res) { return res.ok ? res.json() : null; }).catch(function () { return null; });
+  }
+  function syncFeed() {
+    if (syncing || location.protocol === "file:") return;
+    if (Date.now() - lastSync < 60 * 60 * 1000) return;
+    syncing = true; lastSync = Date.now();
+    Promise.all([getJSON("data/permits.json"), getJSON("data/contacts-extra.json")]).then(function (res) {
+      if (!res[0] && !res[1]) return;
+      var r = PLT_LOCAL.applyFeed(res[0], res[1]);
+      var bits = [];
+      if (r.projects) bits.push(r.projects + " new project" + (r.projects > 1 ? "s" : ""));
+      if (r.contacts) bits.push(r.contacts + " new contact" + (r.contacts > 1 ? "s" : ""));
+      if (r.phones) bits.push(r.phones + " phone number" + (r.phones > 1 ? "s" : ""));
+      if (bits.length) {
+        var b = $("banner"); b.textContent = "Added " + bits.join(", ") + " from the weekly permit check."; b.hidden = false;
+        say("Updated from weekly permit check");
+      }
+      var when = res[0] && res[0].updated;
+      try { if (when) localStorage.setItem("plt-feed-updated", when); } catch (e) {}
+    }).catch(function (err) { say(err && err.message ? err.message : "Couldn't load this week's permits.", true); })
+      .then(function () { syncing = false; });
+  }
+  window.addEventListener("load", function () { setTimeout(syncFeed, 300); });
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) syncFeed(); });
+
+  if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>
